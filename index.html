@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>موسوعة أسرار الحضارة المصرية - يوسف مصطفي حمدان</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --gold: #D4AF37; --dark: #0b1a31; --white: #ffffff;
+            --success: #27ae60; --error: #e74c3c;
+        }
+        * { box-sizing: border-box; outline: none; }
+        body { font-family: 'Cairo', sans-serif; margin: 0; background-color: #fdfaf5; color: var(--dark); overflow: hidden; }
+        
+        input[name="nav"] { display: none; }
+        .back-home { position: fixed; top: 20px; left: 20px; background: var(--dark); color: white; padding: 10px 20px; border-radius: 50px; cursor: pointer; z-index: 1000; border: 2px solid var(--gold); font-weight: bold; }
+
+        .pages-container { position: relative; width: 100%; height: 100vh; }
+        .page {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100vh;
+            display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+            padding: 80px 20px 20px; opacity: 0; pointer-events: none;
+            transition: 0.5s ease; overflow-y: auto;
+        }
+        
+        #tab-home:checked ~ .pages-container #home,
+        #tab-facts:checked ~ .pages-container #facts,
+        #tab-quiz:checked ~ .pages-container #quiz,
+        #tab-game:checked ~ .pages-container #game,
+        #tab-docs:checked ~ .pages-container #docs { opacity: 1; pointer-events: auto; }
+
+        /* الرئيسية */
+        #home { background: linear-gradient(rgba(11,26,49,0.85), rgba(11,26,49,0.85)), url('https://images.unsplash.com/photo-1503177119275-0aa32b3a9368?auto=format&fit=crop&w=1200&q=80') center/cover; justify-content: center; }
+        .header-box { background: rgba(255,255,255,0.1); backdrop-filter: blur(15px); padding: 40px; border-radius: 30px; border: 2px solid var(--gold); text-align: center; color: white; width: 95%; max-width: 700px; }
+        .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
+        .nav-btn { background: var(--gold); color: var(--dark); padding: 12px; border-radius: 12px; font-weight: bold; cursor: pointer; transition: 0.3s; text-align: center; border: none; font-size: 0.95rem; text-decoration: none; display: flex; align-items: center; justify-content: center; }
+        .nav-btn:hover { background: white; transform: scale(1.05); }
+
+        /* الاختبار مع المؤقت */
+        #quiz-box { background: white; padding: 25px; border-radius: 25px; width: 100%; max-width: 500px; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.15); }
+        #timer-bar { width: 100%; height: 8px; background: #eee; border-radius: 10px; margin-bottom: 15px; overflow: hidden; }
+        #timer-fill { width: 100%; height: 100%; background: var(--error); transition: width 1s linear; }
+        .opt { display: block; padding: 12px; margin: 8px 0; border: 2px solid #eee; border-radius: 12px; cursor: pointer; font-weight: bold; }
+        .opt.correct { background: var(--success) !important; color: white; border-color: var(--success); }
+        .opt.wrong { background: var(--error) !important; color: white; border-color: var(--error); }
+
+        /* اللعبة المحسنة */
+        #game-area { width: 100%; max-width: 650px; height: 300px; background: #222 url('https://www.transparenttextures.com/patterns/dark-matter.png'); border: 5px solid var(--gold); border-radius: 20px; position: relative; overflow: hidden; margin-top: 15px; }
+        #player { font-size: 50px; position: absolute; bottom: 0; left: 50px; z-index: 10; transition: bottom 0.1s; }
+        .running { animation: run-anim 0.3s infinite alternate; }
+        @keyframes run-anim { from { transform: translateY(0); } to { transform: translateY(-5px); } }
+        #mummy { font-size: 50px; position: absolute; bottom: 0; right: -60px; }
+        .jumping { animation: jump-anim 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
+        @keyframes jump-anim { 0%, 100% { bottom: 0; } 50% { bottom: 160px; } }
+        .mummy-run { animation: mummy-move 1.8s infinite linear; }
+        @keyframes mummy-move { 0% { right: -60px; } 100% { right: 110%; } }
+
+        /* البطاقات والفيديو */
+        .scroll-container { width: 100%; max-width: 1000px; display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; padding: 20px 10px 100px; }
+        .fact-card, .video-card { background: white; padding: 15px; border-radius: 20px; border-bottom: 5px solid var(--gold); box-shadow: 0 5px 15px rgba(0,0,0,0.05); text-align: center; }
+        .video-card img { width: 100%; border-radius: 15px; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+
+    <audio id="music-1" loop><source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg"></audio>
+    <audio id="music-2" loop><source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3" type="audio/mpeg"></audio>
+    <audio id="snd-jump"><source src="https://www.soundjay.com/buttons/sounds/button-27.mp3" type="audio/mpeg"></audio>
+    <audio id="snd-mummy"><source src="https://www.soundjay.com/human/sounds/zombie-growl-3.mp3" type="audio/mpeg"></audio>
+
+    <input type="radio" name="nav" id="tab-home" checked>
+    <input type="radio" name="nav" id="tab-facts">
+    <input type="radio" name="nav" id="tab-quiz">
+    <input type="radio" name="nav" id="tab-game">
+    <input type="radio" name="nav" id="tab-docs">
+
+    <label for="tab-home" class="back-home">🏠 الرئيسية</label>
+
+    <div class="pages-container">
+        <section id="home" class="page">
+            <div class="header-box">
+                <h1>موسوعة يوسف  مصطفي حمدان</h1>
+                <p> موسوعة اسرار الحضارة المصرية القديمة</p>
+                <div class="menu-grid">
+                    <label for="tab-facts" class="nav-btn">💡 50 حقيقة</label>
+                    <label for="tab-quiz" class="nav-btn" onclick="startQuiz()">📝 تحدي الـ 30 سؤال</label>
+                    <label for="tab-game" class="nav-btn" style="background:#e67e22; color:white;">🧟 يوسف والمومياء</label>
+                    <label for="tab-docs" class="nav-btn">🎥 20 وثائقي</label>
+                    <button onclick="changeMusic()" class="nav-btn" style="grid-column: span 2; background:#27ae60; color:white;">🎵 تبديل الموسيقى</button>
+                </div>
+                <button onclick="shareNow()" class="nav-btn" style="width:100%; margin-top:15px; background:#3498db; color:white;">🔗 مشاركة الرابط</button>
+            </div>
+        </section>
+
+        <section id="facts" class="page">
+            <h2 style="color:var(--gold)">💡 50 معلومة مذهلة</h2>
+            <div class="scroll-container" id="facts-list"></div>
+        </section>
+
+        <section id="quiz" class="page">
+            <h2 style="color:var(--gold)">📝 اختبر ذكائك (10 ثوانٍ لكل سؤال)</h2>
+            <div id="quiz-box">
+                <div id="timer-bar"><div id="timer-fill"></div></div>
+                <p id="q-text" style="font-weight: bold; font-size: 1.1rem; min-height: 50px;"></p>
+                <div id="options"></div>
+                <p id="q-score" style="margin-top: 15px; font-weight: bold;"></p>
+            </div>
+        </section>
+
+        <section id="game" class="page">
+            <h2 style="color:var(--gold)">🧟 يوسف يهرب من المومياء</h2>
+            <div id="game-area" onclick="jump()">
+                <div id="player">🏃‍♂️</div>
+                <div id="mummy">🧟</div>
+                <div id="live-score" style="position:absolute; top:15px; left:20px; color:var(--gold); font-size:24px; font-weight:bold;">0</div>
+            </div>
+            <button onclick="startGame()" id="start-btn" class="nav-btn" style="margin-top:20px; width:200px; background:#c0392b; color:white;">ابدأ الركض!</button>
+        </section>
+
+        <section id="docs" class="page">
+            <h2 style="color:var(--gold)">🎥 المكتبة المرئية</h2>
+            <div class="scroll-container" id="video-list"></div>
+        </section>
+    </div>
+
+    <script>
+        // --- 1. الموسيقى والمشاركة ---
+        let currentMusic = 0;
+        function changeMusic() {
+            const m1 = document.getElementById('music-1');
+            const m2 = document.getElementById('music-2');
+            m1.pause(); m2.pause();
+            if(currentMusic === 0) { m1.play(); currentMusic = 1; }
+            else if(currentMusic === 1) { m2.play(); currentMusic = 2; }
+            else currentMusic = 0;
+        }
+        function shareNow() {
+            const link = window.location.href;
+            navigator.clipboard.writeText(link);
+            alert("تم نسخ رابط الموسوعة! شاركه مع أصدقائك 🚀");
+        }
+
+        // --- 2. 50 حقيقة فريدة ---
+        const factsArr = [
+            "الأطباء المصريون استخدموا الخبز المتعفن لعلاج الالتهابات.", "الأهرامات بنيت بواسطة عمال مأجورين وليس عبيداً.",
+            "المصريون أول من اخترعوا معجون الأسنان.", "كانت القطط مقدسة وعقوبة قتلها الإعدام.",
+            "أول معاهدة سلام في التاريخ وقعها رمسيس الثاني.", "اعتقدوا أن الدماغ عضو غير مهم وتخلصوا منه بالتحنيط.",
+            "أقدم فستان في العالم وجد في مصر وعمره 5000 عام.", "أول من قسم السنة إلى 365 يوماً.",
+            "استخدموا ملح النطرون لتجفيف الجثث.", "كان العمال يتقاضون أجورهم بالخبز والبيرة.",
+            "اخترعوا أول قفل ومفتاح في التاريخ.", "كان للمرأة حق الميراث والطلاق قانونياً.",
+            "توت عنخ آمون مات بسبب كسر في الساق أصيب بالغرغرينا.", "أول من استخدم الخواتم في الزواج.",
+            "الكحل كان يحمي العيون من شمس الصحراء والعدوى.", "صنعوا الورق من نبات البردي.",
+            "كان الملك بيبي الثاني يغطي عبيده بالعسل لإبعاد الذباب.", "أول من استأنس القطط والكلاب منزلياً.",
+            "الهرم الأكبر كان مغطى بحجر جيري أبيض لامع.", "أجروا أول عمليات جراحية ناجحة في الجمجمة.",
+            "استخدموا الشعير والقمح لاختبار نوع الجنين.", "أول من قسم اليوم إلى 24 ساعة.",
+            "معبد الكرنك هو أكبر دار عبادة في العالم القديم.", "كانوا ينامون على وسائد من الخشب أو الحجر.",
+            "الملك مينا هو موحد القطرين عام 3100 ق.م.", "الذهب كان يسمى جلد الآلهة.",
+            "استخدموا زيت الخروع للإضاءة في المصابيح.", "أول من استخدم الشرطة وكلاب الحراسة.",
+            "الهيروغليفية تضم أكثر من 700 رمز.", "أقدم طرف صناعي في التاريخ وجد في قدم مومياء.",
+            "كانوا يحلقون حواجبهم حزناً على موت قططهم.", "أول من صنع أطرافاً خشبية تعويضية.",
+            "كليوباترا كانت من أصل مقدوني يوناني.", "كانوا يعتقدون أن الأرض قرص مسطح.",
+            "أول من استخدم الموازين في التجارة.", "البصل كان يوضع في المقابر كرمز للتنفس.",
+            "استغرق بناء هرم خوفو 20 عاماً.", "صنعوا ملابسهم من الكتان لبرودته.",
+            "حجر رشيد كشف سر اللغة بفضل شامبليون.", "كان لديهم 3 أنواع من الخطوط للكتابة.",
+            "أول من استخدم العطور والزيوت في التجميل.", "التعليم بدأ في سن الخامسة في المعابد.",
+            "الجيش المصري أول من استخدم العجلات الحربية بتكتيك متطور.", "مقبرة سيتي الأول هي الأطول في وادي الملوك.",
+            "وضعوا تمائم داخل لفائف المومياء للحماية.", "الحضارة استمرت 3000 عام كدولة موحدة.",
+            "أول من اخترع مقياس النيل لمعرفة الفيضان.", "كانوا يعتقدون أن الروح تمر عبر أبواب وهمية.",
+            "صنعوا الصنادل من ورق البردي والجلد.", "أقدم خريطة لمنجم ذهب وجدت في مصر."
+        ];
+        const fList = document.getElementById('facts-list');
+        factsArr.forEach((f, i) => fList.innerHTML += `<div class="fact-card"><h3>#${i+1}</h3><p>${f}</p></div>`);
+
+        // --- 3. 30 سؤالاً متنوعاً (مؤقت  15ث) ---
+        const quizData = [
+            {q: "من بنى الهرم الأكبر؟", a: ["خفرع", "خوفو", "منقرع"], c: 1},
+            {q: "ما الملح المستخدم بالتحنيط؟", a: ["النطرون", "اليود", "البوتاسيوم"], c: 0},
+            {q: "من الملكة التي حكمت مصر 20 عاماً؟", a: ["نفرتاري", "نفرتيتي", "حتشبسوت"], c: 2},
+            {q: "ما الطائر الذي يمثل حورس؟", a: ["النسر", "الصقر", "البومة"], c: 1},
+            {q: "من الملك الذي طرد الهكسوس؟", a: ["تحتمس", "أحمس", "سيتي"], c: 1},
+            {q: "من هو إله التحنيط؟", a: ["أنوبيس", "أوزيريس", "رع"], c: 0},
+            {q: "ما عاصمة مصر في الدولة القديمة؟", a: ["طيبة", "منف", "أواريس"], c: 1},
+            {q: "من الملك الذي وحد القطرين؟", a: ["خوفو", "مينا", "زوسر"], c: 1},
+            {q: "ما المادة التي صنع منها الورق؟", a: ["الكتان", "البردي", "الجلد"], c: 1},
+            {q: "أين تقع معابد أبو سمبل؟", a: ["الأقصر", "أسوان", "قنا"], c: 1},
+            {q: "من الملك صاحب أطول فترة حكم؟", a: ["رمسيس الثاني", "بيبي الثاني", "سيتي الأول"], c: 1},
+            {q: "ما الرمز الذي يعبر عن الحياة؟", a: ["الجعران", "مفتاح العنك", "العين"], c: 1},
+            {q: "من اكتشف مقبرة توت عنخ آمون؟", a: ["شامبليون", "هوارد كارتر", "بلزوني"], c: 1},
+            {q: "ما اسم اللعبة اللوحية الشهيرة؟", a: ["السينيت", "الطاولة", "الشطرنج"], c: 0},
+            {q: "ما الحجر الذي فك رموز اللغة؟", a: ["حجر الجيزة", "حجر رشيد", "حجر النوبة"], c: 1},
+            {q: "من الملك الذي حاول توحيد الآلهة؟", a: ["أخناتون", "توت", "رمسيس"], c: 0},
+            {q: "ما العضو الذي يترك داخل المومياء؟", a: ["المعدة", "القلب", "الدماغ"], c: 1},
+            {q: "من هي زوجة رمسيس الثاني المفضلة؟", a: ["نفرتاري", "نفرتيتي", "تي"], c: 0},
+            {q: "ما الحيوان الذي يمثل الإلهة باستيت؟", a: ["الأسد", "الكلب", "القطة"], c: 2},
+            {q: "كم استغرق بناء الهرم الأكبر؟", a: ["10 سنين", "20 سنة", "50 سنة"], c: 1},
+            {q: "من المهندس الذي بنى هرم زوسر؟", a: ["إمحتب", "حم إيونو", "سنموت"], c: 0},
+            {q: "ماذا كان يسمى حاكم مصر؟", a: ["القيصر", "السلطان", "الفرعون"], c: 2},
+            {q: "ما النهر الذي قدسه المصريون؟", a: ["دجلة", "النيل", "الفرات"], c: 1},
+            {q: "من هو إله الشمس؟", a: ["رع", "بتاح", "تحوت"], c: 0},
+            {q: "ما المادة التي بنيت منها الأهرامات؟", a: ["الطوب اللبن", "الحجر الجيري", "الرخام"], c: 1},
+            {q: "أين يقع وادي الملوك؟", a: ["الجيزة", "سقارة", "الأقصر"], c: 2},
+            {q: "ما التاج الذي يرمز لتوحيد مصر؟", a: ["الأبيض", "المزدوج", "الأحمر"], c: 1},
+            {q: "من هو إله الحكمة والكتابة؟", a: ["تحوت", "آمون", "خونسو"], c: 0},
+            {q: "ما الاسم القديم للأقصر؟", a: ["أون", "طيبة", "بوتو"], c: 1},
+            {q: "ما أول هرم بني في التاريخ؟", a: ["هرم خوفو", "هرم زوسر", "هرم ميدوم"], c: 1}
+        ];
+
+        let qIdx = 0, qScore = 0, timer, timeLeft = 10;
+        function startQuiz() { qIdx=0; qScore=0; loadQ(); }
+        function loadQ() {
+            if(qIdx >= 30) { document.getElementById('quiz-box').innerHTML = `<h2>تم! 🎉 نتيجتك: ${qScore}/30</h2><button onclick="location.reload()" class="nav-btn">إعادة</button>`; return; }
+            timeLeft = 10; updateTimerBar();
+            const d = quizData[qIdx];
+            document.getElementById('q-text').innerText = d.q;
+            document.getElementById('q-score').innerText = `سؤال: ${qIdx+1}/30 | نقاط: ${qScore}`;
+            const opts = document.getElementById('options'); opts.innerHTML = '';
+            d.a.forEach((a, i) => {
+                const b = document.createElement('div'); b.className = 'opt'; b.innerText = a;
+                b.onclick = () => checkA(i); opts.appendChild(b);
+            });
+            clearInterval(timer);
+            timer = setInterval(() => { timeLeft--; updateTimerBar(); if(timeLeft<=0) checkA(-1); }, 1000);
+        }
+        function updateTimerBar() { document.getElementById('timer-fill').style.width = (timeLeft*10)+'%'; }
+        function checkA(i) {
+            clearInterval(timer);
+            if(i === quizData[qIdx].c) qScore++;
+            qIdx++; setTimeout(loadQ, 500);
+        }
+
+        // --- 4. اللعبة (يوسف والمومياء) ---
+        let gameOn = false, scoreVal = 0;
+        const p = document.getElementById('player'), m = document.getElementById('mummy');
+        function jump() {
+            if(!p.classList.contains('jumping') && gameOn) {
+                document.getElementById('snd-jump').play();
+                p.classList.add('jumping'); setTimeout(()=>p.classList.remove('jumping'), 600);
+            }
+        }
+        function startGame() {
+            if(gameOn) return; gameOn = true; scoreVal = 0;
+            m.classList.add('mummy-run'); p.classList.add('running');
+            document.getElementById('snd-mummy').play();
+            document.getElementById('start-btn').style.display = 'none';
+            const loop = setInterval(() => {
+                let pB = parseInt(window.getComputedStyle(p).getPropertyValue("bottom"));
+                let mR = parseInt(window.getComputedStyle(m).getPropertyValue("right"));
+                if(mR > 480 && mR < 550 && pB <= 50) {
+                    alert("أمسكت بك المومياء! نقاطك: " + Math.floor(scoreVal));
+                    clearInterval(loop); resetGame();
+                } else { scoreVal += 0.1; document.getElementById('live-score').innerText = Math.floor(scoreVal); }
+            }, 50);
+        }
+        function resetGame() { gameOn=false; m.classList.remove('mummy-run'); p.classList.remove('running'); document.getElementById('start-btn').style.display = 'inline-block'; }
+
+        // --- 5. الفيديوهات (20 فيديو) ---
+        const vids = [
+            {t: "بناء الأهرامات", id: "l0S8rYjE7_0"}, {t: "سر التحنيط", id: "CmdG95G6rjE"},
+            {t: "رمسيس الثاني", id: "twVxHeq4gr8"}, {t: "توت عنخ آمون", id: "DaGqneESWuw"},
+            {t: "حتشبسوت", id: "jhhkDj2JqPs"}, {t: "الحياة اليومية", id: "7VNbPTNKANc"},
+            {t: "حجر رشيد", id: "FVvaPewN58Y"}, {t: "معركة قادش", id: "NyFlmMolp_c"},
+            {t: "الكرنك", id: "ZrhBnwmYYko"}, {t: "أبو الهول", id: "7_gdEc1YVjI"},
+            {t: "توحيد القطرين", id: "ldoemQxBHrk"}, {t: "الطب القديم", id: "uwIObVE8mCw"},
+            {t: "النيل والزراعة", id: "n1DvNP_UUqg"}, {t: "آلهة مصر", id: "vSU313tnNI8"},
+            {t: "موكب المومياوات", id: "mS6vH92W6e0"}, {t: "الجيش المصري", id: "umNawGzId0U"},
+            {t: "التعليم قديماً", id: "ZrhBnwmYYko"}, {t: "رحلة الخلود", id: "CmdG95G6rjE"},
+            {t: "عجائب الدنيا", id: "FVvaPewN58Y"}, {t: "نهاية العصور", id: "jhhkDj2JqPs"}
+        ];
+        const vBox = document.getElementById('video-list');
+        vids.forEach(v => vBox.innerHTML += `<div class="video-card"><img src="https://img.youtube.com/vi/${v.id}/0.jpg"><h3>${v.t}</h3><a href="https://www.youtube.com/watch?v=${v.id}" target="_blank" class="nav-btn">مشاهدة</a></div>`);
+    </script>
+</body>
+</html>
